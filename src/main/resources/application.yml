@@ -1,0 +1,29 @@
+# logging ?? ??
+logging:
+    level:
+        root: INFO
+        sql: ERROR
+
+# Overloaded POST ??
+spring:
+    mvc:
+        hiddenmethod:
+            filter:
+                enabled: true
+    datasource:
+        url: jdbc:mysql://localhost:3306/spring_security
+        username: root
+        password:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+    jpa:
+        hibernate:
+            ddl-auto: update
+        show-sql: false
+        properties.hiberbate.format_sql: true
+
+
+# session
+server:
+    servlet:
+        session:
+            timeout: 10m # ??? 30??? ??? 1????.
