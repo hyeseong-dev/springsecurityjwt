@@ -5,11 +5,14 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
@@ -73,7 +76,19 @@ public class JWTServiceImpl implements JWTService {
      * @return JWT 서명에 사용될 키
      */
     private Key getSigningKey(){
-        byte[] key = Decoders.BASE64.decode("superstrongsecret");
+        // 안전한 무작위 바이트 시퀀스 생성
+//        SecureRandom secureRandom = new SecureRandom();
+//        byte[] randomBytes = new byte[32]; // 256비트 키 생성
+//        secureRandom.nextBytes(randomBytes);
+//
+//        // Base64로 인코딩
+//        String encodedKey = Base64.getEncoder().encodeToString(randomBytes);
+//
+//        // 인코딩된 키 출력
+//        System.out.println(encodedKey);
+
+        String encodedKey = "UbnBrNUd7fKatR98++HuvUYDLm38CFiVv0+Ja7wq6Sg=";
+        byte[] key = Decoders.BASE64.decode(encodedKey);
         return Keys.hmacShaKeyFor(key);
     }
 

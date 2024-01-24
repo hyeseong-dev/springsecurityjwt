@@ -1,6 +1,7 @@
 package com.codewithprojects.springsecurity.service.impl;
 
 import com.codewithprojects.springsecurity.dto.JwtAuthenticationResponse;
+import com.codewithprojects.springsecurity.dto.RefreshTokenRequest;
 import com.codewithprojects.springsecurity.dto.SignUpRequest;
 import com.codewithprojects.springsecurity.dto.SigninRequest;
 import com.codewithprojects.springsecurity.entities.Role;
@@ -49,18 +50,51 @@ public class AuthenticationImpl implements AuthenticationService {
         return userRepository.save(userEntity);
     }
 
-    public JwtAuthenticationResponse signin(SigninRequest signinRequest){
+    /**
+     * signin 메서드는 사용자 로그인 과정을 처리합니다.
+     * 이 메서드는 SigninRequest 객체를 받아 사용자 인증을 수행하고, 성공적으로 인증된 경우 JWT 토큰을 생성합니다.
+     *
+     * @param signinRequest 사용자 로그인을 위해 필요한 정보를 담은 SigninRequest 객체.
+     *                      이 객체에는 사용자의 이메일과 비밀번호가 포함됩니다.
+     * @return JwtAuthenticationResponse 객체. 이 객체는 생성된 액세스 토큰과 리프레시 토큰을 포함합니다.
+     * @throws UsernameNotFoundException 사용자 이메일이 데이터베이스에 존재하지 않을 경우 발생합니다.
+     * @throws IllegalArgumentException 잘못된 이메일 또는 비밀번호 입력 시 발생합니다.
+     */
+    public JwtAuthenticationResponse signin(SigninRequest signinRequest) {
+        // 사용자 인증을 위해 AuthenticationManager를 사용합니다.
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(signinRequest.getEmail(),
-                        signinRequest.getPassword()));
-        User userEntity = userRepository.findByEmail(signinRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+                new UsernamePasswordAuthenticationToken(signinRequest.getEmail(), signinRequest.getPassword())
+        );
+
+        // 사용자 이메일을 기반으로 사용자 정보를 조회합니다.
+        User userEntity = userRepository.findByEmail(signinRequest.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("Invalid email or password"));
+
+        // JWT 액세스 토큰 및 리프레시 토큰을 생성합니다.
         String accessToken = jwtService.generateAccessToken(userEntity);
         String refreshToken = jwtService.generateRefreshToken(new HashMap<>(), userEntity);
 
+        // 생성된 토큰을 응답 객체에 담아 반환합니다.
         JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse();
-
         jwtAuthenticationResponse.setAccessToken(accessToken);
         jwtAuthenticationResponse.setRefreshToken(refreshToken);
         return jwtAuthenticationResponse;
+    }
+
+    public JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest){
+        String userEmail = jwtService.extractUserName(refreshTokenRequest.getRefreshToken());
+        User userEntity = userRepository.findByEmail(userEmail).orElseThrow();
+
+        if(jwtService.isTokenValid(refreshTokenRequest.getRefreshToken(), userEntity)){
+            String accessToken = jwtService.generateAccessToken(userEntity);
+
+            // 생성된 토큰을 응답 객체에 담아 반환합니다.
+            JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse();
+
+            jwtAuthenticationResponse.setAccessToken(accessToken);
+            jwtAuthenticationResponse.setRefreshToken(refreshTokenRequest.getRefreshToken());
+            return jwtAuthenticationResponse;
+        }
+        return null;
     }
 }
