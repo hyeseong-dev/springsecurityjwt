@@ -2,6 +2,8 @@ package com.codewithprojects.springsecurity.service;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Map;
+
 /**
  * JWTService 인터페이스는 JWT(JSON Web Token) 처리를 위한 서비스를 정의합니다.
  * 이 인터페이스를 구현하는 클래스는 JWT의 생성, 추출 및 유효성 검증을 담당합니다.
@@ -22,7 +24,15 @@ public interface JWTService {
      * @param userDetails 사용자의 상세 정보
      * @return 생성된 JWT 토큰
      */
-    String generateToken(UserDetails userDetails);
+    String generateAccessToken(UserDetails userDetails);
+
+    /**
+     * 사용자의 상세 정보를 기반으로 JWT 토큰을 생성합니다.
+     *
+     * @param userDetails 사용자의 상세 정보
+     * @return 생성된 JWT 토큰
+     */
+    String generateRefreshToken(Map<String, Object> extraClaims, UserDetails userDetails);
 
     /**
      * 주어진 JWT 토큰의 유효성을 검사합니다.
